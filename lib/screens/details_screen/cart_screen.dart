@@ -13,8 +13,9 @@ class CartScreen extends StatefulWidget {
 class _CartScreenState extends State<CartScreen> {
   @override
   Widget build(BuildContext context) {
-    final List<dynamic> productList = HiveDataBase().getProducts();
+    final List<dynamic>? productList = HiveDataBase().getProducts();
     int minStock = 1;
+    double totalAmount = 0;
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.lightBlue.shade200,
@@ -34,139 +35,190 @@ class _CartScreenState extends State<CartScreen> {
           ),
         ),
       ),
-      body: ListView.builder(
-          itemCount: productList.length,
-          itemBuilder: (BuildContext context, int index) {
-            Map<dynamic, dynamic> productDetails = productList[index];
-            return Padding(
+      body: productList != null && productList.isNotEmpty
+          ? Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
                 children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 120,
-                        height: 110,
-                        padding: const EdgeInsets.all(5),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(15),
-                          border: Border.all(
-                            width: 1.2,
-                            color: Colors.grey.shade300,
-                          ),
-                        ),
-                        child: Image.network(
-                          productDetails['image'],
-                        ),
-                      ),
-                      const SizedBox(width: 25),
-                      Expanded(
-                        child: SizedBox(
+                  ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: productList.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        Map<dynamic, dynamic> productDetails = productList[index];
+
+                        totalAmount = productDetails['price'];
+
+                        return SizedBox(
                           width: double.infinity,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                          child: Row(
                             children: [
-                              Text(
-                                productDetails['title'],
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 14,
-                                  color: Colors.black87,
+                              Container(
+                                width: 120,
+                                height: 130,
+                                padding: const EdgeInsets.all(5),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(15),
+                                  border: Border.all(
+                                    width: 1.2,
+                                    color: Colors.grey.shade300,
+                                  ),
                                 ),
-                                maxLines: 4,
+                                child: Image.network(
+                                  productDetails['image'],
+                                ),
                               ),
-                              Row(
+                              const SizedBox(width: 25),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text(
-                                    '\u{20B9}',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
+                                  SizedBox(
+                                    width: 200,
+                                    child: Text(
+                                      productDetails['title'],
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 14,
+                                          color: Colors.black87,
+                                          overflow: TextOverflow.ellipsis),
+                                      maxLines: 2,
                                     ),
                                   ),
-                                  Text(
-                                    productDetails['price'].toString(),
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 5),
-                                  RatingStars(
-                                    editable: true,
-                                    rating: productDetails['rating']['rate'].toDouble(),
-                                    color: Colors.amber,
-                                    iconSize: 20,
-                                  ),
-                                  Text(
-                                    ' (${productDetails['rating']['count']})',
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: [
-                                  IconButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        minStock++;
-                                        productDetails['price'] = productDetails['price'] * minStock;
-                                      });
-                                    },
-                                    icon: const Icon(Icons.add, size: 20),
-                                    splashColor: Colors.transparent,
-                                  ),
-                                  Container(
-                                    width: 30,
-                                    height: 30,
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFf8dddb),
-                                      borderRadius: BorderRadius.circular(25),
-                                    ),
-                                    child: Align(
-                                      alignment: Alignment.center,
-                                      child: Text(
-                                        minStock.toString(),
+                                  Row(
+                                    children: [
+                                      const Text(
+                                        '\u{20B9}',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                      Text(
+                                        productDetails['price'].toString(),
                                         style: const TextStyle(
                                           fontWeight: FontWeight.bold,
                                           fontSize: 16,
                                         ),
                                       ),
-                                    ),
+                                    ],
                                   ),
-                                  Column(
+                                  Row(
+                                    children: [
+                                      RatingStars(
+                                        editable: true,
+                                        rating: productDetails['rating']['rate'].toDouble(),
+                                        color: Colors.amber,
+                                        iconSize: 20,
+                                      ),
+                                      Text(
+                                        ' (${productDetails['rating']['count']})',
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
                                     children: [
                                       IconButton(
                                         onPressed: () {
-                                          if (minStock > 1) {
-                                            setState(() {
-                                              minStock--;
-                                              productDetails['price'] = productDetails['price'] * minStock;
-                                            });
-                                          }
+                                          setState(() {
+                                            minStock++;
+                                            productDetails['price'] = productDetails['price'] * minStock;
+                                            totalAmount = productDetails['price'] * minStock;
+                                          });
                                         },
-                                        icon: const Center(child: Icon(Icons.minimize, size: 20)),
+                                        icon: const Icon(Icons.add, size: 20),
                                         splashColor: Colors.transparent,
                                       ),
-                                      const SizedBox(height: 7),
+                                      Container(
+                                        width: 30,
+                                        height: 30,
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFf8dddb),
+                                          borderRadius: BorderRadius.circular(25),
+                                        ),
+                                        child: Align(
+                                          alignment: Alignment.center,
+                                          child: Text(
+                                            minStock.toString(),
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 16,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      Column(
+                                        children: [
+                                          IconButton(
+                                            onPressed: () {
+                                              if (minStock > 1) {
+                                                setState(() {
+                                                  minStock--;
+                                                  productDetails['price'] = productDetails['price'] * minStock;
+                                                  totalAmount = productDetails['price'] * minStock;
+                                                });
+                                              }
+                                            },
+                                            icon: const Center(child: Icon(Icons.minimize, size: 20)),
+                                            splashColor: Colors.transparent,
+                                          ),
+                                          const SizedBox(height: 7),
+                                        ],
+                                      ),
                                     ],
                                   ),
                                 ],
                               ),
+                              InkWell(
+                                onTap: () {
+                                  setState(() {
+                                    HiveDataBase().deleteProducts();
+                                  });
+                                },
+                                child: const Icon(
+                                  Icons.delete_rounded,
+                                  size: 30,
+                                ),
+                              ),
                             ],
                           ),
+                        );
+                      }),
+                  const Spacer(),
+                  Row(
+                    children: [
+                      const Text(
+                        'Total Amount : ',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 20,
+                        ),
+                      ),
+                      const Text(
+                        '\u{20B9}',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 20,
+                        ),
+                      ),
+                      Text(
+                        totalAmount.toString(),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 20,
                         ),
                       ),
                     ],
                   ),
                 ],
               ),
-            );
-          }),
+            )
+          : const Center(
+              child: Text('Your Cart is Empty'),
+            ),
     );
   }
 }

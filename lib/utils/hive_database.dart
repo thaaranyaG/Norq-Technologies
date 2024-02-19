@@ -13,7 +13,11 @@ class HiveDataBase {
     await storedBox.put(_productsKey, allCalls);
   }
 
-  List<dynamic> getProducts() {
+  List<dynamic>? getProducts() {
     return storedBox.get(_productsKey);
+  }
+
+  void deleteProducts() {
+    storedBox.delete(_productsKey);
   }
 }

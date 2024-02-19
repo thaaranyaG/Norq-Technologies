@@ -6,7 +6,6 @@ import 'package:norq_technologies/screens/categories/jewelery_screen.dart';
 import 'package:norq_technologies/screens/categories/men_screen.dart';
 import 'package:norq_technologies/screens/categories/women_screen.dart';
 import 'package:norq_technologies/screens/details_screen/cart_screen.dart';
-import 'package:norq_technologies/service/api_client.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -64,7 +63,6 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
           const SizedBox(width: 20),
           InkWell(
             onTap: () {
-              ApiClient().getProducts();
               Get.to(() => const CartScreen());
             },
             child: const Icon(Icons.add_shopping_cart),
